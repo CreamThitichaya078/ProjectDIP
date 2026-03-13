@@ -2,14 +2,18 @@ import cv2
 import numpy as np
 import mahotas
 import pywt
+import plotly.express as px
 
 def preprocess(input_path, output_path):
     # To Grayscale
+
     img = cv2.imread(input_path, cv2.IMREAD_GRAYSCALE)
 
     # --- ส่วนที่ 1: การแยกวัตถุออกจากพื้นหลัง ---
     # 1.1 Otsu's Thresholding เพื่อแยกวัตถุ (ใบเสร็จ) ออกจากพื้นหลังโดยอัตโนมัติ
+
     _, mask = cv2.threshold(img, 0, 255, cv2.THRESH_BINARY + cv2.THRESH_OTSU)
+
     # T = mahotas.thresholding.otsu(img)
     # mask = np.where(img > T, 255, 0).astype(np.uint8)
 
@@ -18,6 +22,9 @@ def preprocess(input_path, output_path):
     for _ in range(3):
         mask = mahotas.close(mask, kernel)
     # mask = cv2.morphologyEx(mask, cv2.MORPH_CLOSE, kernel, iterations=3)
+
+    # fig = px.imshow(mask, color_continuous_scale="gray")
+    # fig.show()
 
     # 1.3 ค้นหาเส้นขอบ และเลือกขอบที่มีขนาดพื้นที่ใหญ่ที่สุดซึ่งคิดว่าเป็นใบเสร็จ
     contours, _ = cv2.findContours(mask, cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE)
@@ -42,14 +49,8 @@ def preprocess(input_path, output_path):
         # 3. ปรับค่าสีให้อยู่ใน 0-255
     divided = cv2.normalize(divided, None, 0, 255, cv2.NORM_MINMAX).astype(np.uint8)
 
-    # 2.3 ลด noise ขนาดเล็กด้วย Gaussian Blur บางๆ
-    blurred = cv2.GaussianBlur(divided, (3, 3), 0)
-
-    # 2.4 CLAHE เพิ่มความคมชัดของตัวอักษรด้วย (Contrast Limited Adaptive Histogram Equalization)
-    # clahe = cv2.createCLAHE(clipLimit=3.0, tileGridSize=(8, 8))
-
     # แปลงภาพเป็น float
-    img_float = blurred.astype(np.float32) / 255.0
+    img_float = divided.astype(np.float32) / 255.0
 
     # Wavelet decomposition
     coeffs = pywt.wavedec2(img_float, wavelet='db4', level=3)
@@ -75,12 +76,20 @@ def preprocess(input_path, output_path):
     sharp = (sharp * 255).astype(np.uint8)
 
     warped = sharp
-    #5 16
-    # cl = clahe.apply(blurred)
 
-    cv2.imwrite(output_path, warped)
+    # 2.3 ลด noise ขนาดเล็กด้วย Gaussian Blur บางๆ
+    blurred = cv2.GaussianBlur(warped, (3, 3), 0)
+
+    # 2.4 CLAHE เพิ่มความคมชัดของตัวอักษรด้วย (Contrast Limited Adaptive Histogram Equalization)
+    clahe = cv2.createCLAHE(clipLimit=3.0, tileGridSize=(8, 8))
+
+    #5 16
+    cl = clahe.apply(blurred)
+
+    cv2.imwrite(output_path, cl)
     return output_path
 
 # รันภายใน
-# if __name__ == '__main__':
-#     preprocess('Poundland_Up.JPG', 'test.jpg')
+
+if __name__ == '__main__':
+    preprocess('Poundland_Up.JPG', 'test.jpg')
