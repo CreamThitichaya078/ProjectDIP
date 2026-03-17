@@ -1,12 +1,14 @@
 from preprocess import preprocess
-from OCR_paddle import run_ocr_pipeline
-from OCR_evaluate import calculate_metrics
+from OCR_Paddle import run_ocr_pipeline
+from OCR_Evaluate import calculate_metrics
+import plotly.express as px
+import cv2
 
 # --- CONFIG PATH  ---
-INPUT_IMAGE = "D:/DIP/Project/Final/Poundland_Up.JPG" #ภาพต้นฉบับ
-PREPROCESSED_IMG = "D:/DIP/Project/Final/output_Pre_Poundland_Up.jpg" #ภาพต้นฉบับที่ผ่าน image processing แล้ว
-OCR_OUTPUT_PRE = "D:/DIP/Project/Final/output_Pre_OCR_Poundland_Up.jpg" #ภาพที่ผ่าน image processing แล้ว ไปเข้า OCRต่อ
-OCR_OUTPUT_ORI = "D:/DIP/Project/Final/output_Ori_OCR_Poundland_Up.jpg" #ภาพต้นฉบับที่ผ่าน OCR
+INPUT_IMAGE = "D:/DIP/Project/Final/Poundland.jpg" #ภาพต้นฉบับ
+PREPROCESSED_IMG = "D:/DIP/Project/Final/output_Pre_Poundland.jpg" #ภาพต้นฉบับที่ผ่าน image processing แล้ว
+OCR_OUTPUT_PRE = "D:/DIP/Project/Final/output_Pre_OCR_Poundland.jpg" #ภาพที่ผ่าน image processing แล้ว ไปเข้า OCRต่อ
+OCR_OUTPUT_ORI = "D:/DIP/Project/Final/output_Ori_OCR_Poundland.jpg" #ภาพต้นฉบับที่ผ่าน OCR
 GROUND_TRUTH_TXT = "D:/DIP/Project/Final/ground_truth.txt" #ผลเฉลย
 
 
@@ -37,6 +39,12 @@ def main():
     print("=" * 50)
 
     # 4. แสดงภาพเปรียบเทียบ (Option)
+    fig = px.imshow(cv2.imread(INPUT_IMAGE))
+    fig2 = px.imshow(cv2.imread(PREPROCESSED_IMG))
+    fig3 = px.imshow(cv2.imread(OCR_OUTPUT_PRE))
+    fig.show()
+    fig2.show()
+    fig3.show()
     # img_ori = cv2.imread(INPUT_IMAGE)
     # img_pre = cv2.imread(PREPROCESSED_IMG)
     # cv2.imshow("Original", cv2.resize(img_ori, (0, 0), fx=0.4, fy=0.4))
